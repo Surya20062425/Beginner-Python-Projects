@@ -1,0 +1,105 @@
+"""
+Password Generator
+Difficulty: Easy
+Concepts: Strings, secrets module, CLI
+"""
+
+import secrets
+import string
+
+
+def get_password_length():
+    """Get a valid password length from user."""
+    while True:
+        try:
+            length = int(input("Enter password length (8-128): "))
+            if 8 <= length <= 128:
+                return length
+            print("❌ Length must be between 8 and 128.")
+        except ValueError:
+            print("❌ Please enter a valid number.")
+
+
+def get_character_sets():
+    """Ask user which character sets to include."""
+    print("\nSelect character sets to include (y/n):")
+
+    sets = {
+        "uppercase": string.ascii_uppercase,
+        "lowercase": string.ascii_lowercase,
+        "digits": string.digits,
+        "symbols": string.punctuation
+    }
+
+    selected = {}
+    for name, chars in sets.items():
+        choice = input(f"  Include {name}? (y/n): ").strip().lower()
+        if choice in ('y', 'yes'):
+            selected[name] = chars
+
+    if not selected:
+        print("⚠️  No sets selected. Using lowercase by default.")
+        selected["lowercase"] = string.ascii_lowercase
+
+    return selected
+
+
+def generate_password(length, char_sets):
+    """Generate a secure password ensuring at least one char from each set."""
+    all_chars = "".join(char_sets.values())
+
+    # Ensure at least one character from each selected set
+    password = []
+    for chars in char_sets.values():
+        password.append(secrets.choice(chars))
+
+    # Fill the rest with random characters from all sets combined
+    for _ in range(length - len(password)):
+        password.append(secrets.choice(all_chars))
+
+    # Shuffle to avoid predictable pattern
+    secrets.SystemRandom().shuffle(password)
+
+    return "".join(password)
+
+
+def calculate_strength(length, num_sets):
+    """Calculate and display password strength."""
+    score = length * num_sets
+    if score >= 400:
+        return "🔒 Very Strong"
+    elif score >= 250:
+        return "🔐 Strong"
+    elif score >= 150:
+        return "🛡️  Medium"
+    else:
+        return "⚠️  Weak"
+
+
+def main():
+    """Main password generator loop."""
+    print("=" * 45)
+    print("🔑 SECURE PASSWORD GENERATOR")
+    print("=" * 45)
+
+    while True:
+        length = get_password_length()
+        char_sets = get_character_sets()
+
+        password = generate_password(length, char_sets)
+        strength = calculate_strength(length, len(char_sets))
+
+        print("\n" + "=" * 45)
+        print(f"Generated Password: {password}")
+        print(f"Strength: {strength}")
+        print(f"Length: {len(password)} chars | Sets: {len(char_sets)}")
+        print("=" * 45)
+
+        again = input("\nGenerate another? (y/n): ").strip().lower()
+        if again not in ('y', 'yes'):
+            print("\n👋 Stay secure!")
+            break
+
+
+if __name__ == "__main__":
+    main()
