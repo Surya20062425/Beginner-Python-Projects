@@ -184,4 +184,81 @@ def budget_vs_actual(df):
     ax.set_xlabel("Category", fontsize=11)
     ax.set_ylabel("Amount ($)", fontsize=11)
     ax.set_xticks(x)
-    ax.set_xticklabels(categories, rotation=
+    ax.set_xticklabels(categories, rotation=45, ha="right")
+    ax.legend()
+    ax.grid(True, axis="y", alpha=0.3)
+    plt.tight_layout()
+    plt.savefig("chart_budget_vs_actual.png", dpi=150)
+    plt.close()
+    print("  📊 Saved: chart_budget_vs_actual.png")
+
+
+def print_summary(df):
+    """Print console summary report."""
+    print("\n" + "=" * 55)
+    print("📈 FINANCIAL SUMMARY REPORT")
+    print("=" * 55)
+
+    total_income = df[df["type"] == "income"]["amount"].sum()
+    total_expense = df[df["type"] == "expense"]["amount"].sum()
+    net_savings = total_income - total_expense
+
+    print(f"\n  💰 Total Income:    ${total_income:>10,.2f}")
+    print(f"  💸 Total Expenses:  ${total_expense:>10,.2f}")
+    print(f"  📊 Net Savings:     ${net_savings:>10,.2f}")
+    print(f"  📉 Savings Rate:    {(net_savings/total_income*100 if total_income else 0):>10.1f}%")
+
+    print(f"\n  {'─' * 50}")
+    print(f"  {'Category':<18}{'Spent':>12}{'% of Total':>12}{'Transactions':>12}")
+    print(f"  {'─' * 50}")
+
+    expenses = df[df["type"] == "expense"]
+    cat_summary = expenses.groupby("category").agg({"amount": "sum", "date": "count"})
+    cat_summary = cat_summary.sort_values("amount", ascending=False)
+
+    for cat, row in cat_summary.iterrows():
+        pct = (row["amount"] / total_expense * 100) if total_expense else 0
+        print(f"  {cat:<18}${row['amount']:>10,.2f}{pct:>10.1f}%{row['date']:>10}")
+
+    print(f"  {'─' * 50}")
+    print(f"  {'Total':<18}${total_expense:>10,.2f}{'100.0%':>10}{len(expenses):>10}")
+    print(f"  {'─' * 50}")
+
+    # Monthly breakdown
+    print(f"\n  📅 Monthly Breakdown:")
+    print(f"  {'─' * 40}")
+    monthly = df.groupby(["month", "type"])["amount"].sum().unstack(fill_value=0)
+    for month, row in monthly.iterrows():
+        inc = row.get("income", 0)
+        exp = row.get("expense", 0)
+        sav = inc - exp
+        print(f"  {month:<10}  Income: ${inc:>8,.2f}  Exp: ${exp:>8,.2f}  Save: ${sav:>8,.2f}")
+    print(f"  {'─' * 40}")
+    print("=" * 55)
+
+
+def main():
+    """Main dashboard runner."""
+    filename = "transactions.csv"
+    create_sample_data(filename)
+
+    print("=" * 55)
+    print("💼 PERSONAL FINANCE DASHBOARD")
+    print("=" * 55)
+
+    df = load_data(filename)
+    print(f"\n📄 Loaded {len(df)} transactions")
+
+    print("\n📊 Generating charts...")
+    monthly_income_vs_expenses(df)
+    expense_breakdown_pie(df)
+    savings_trend(df)
+    category_spending_bar(df)
+    budget_vs_actual(df)
+
+    print("\n✅ All charts exported as PNG files!")
+    print_summary(df)
+
+
+if __name__ == "__main__":
+    main()
