@@ -41,9 +41,9 @@ def play_round():
             print(f"\n🎉 Congratulations! You guessed it in {attempts} attempt(s)!")
             return True
         elif guess < secret_number:
-            print("📉 Too low! Try a higher number.\n")
+            print(" Too low! Try a higher number.\n")
         else:
-            print("📈 Too high! Try a lower number.\n")
+            print(" Too high! Try a lower number.\n")
 
     print(f"\n😢 Game Over! The number was: {secret_number}")
     return False
@@ -62,7 +62,7 @@ def main():
         else:
             losses += 1
 
-        print(f"\n📊 Score: {wins} wins | {losses} losses")
+        print(f"\n Score: {wins} wins | {losses} losses")
 
         again = input("\nPlay again? (y/n): ").strip().lower()
         if again not in ('y', 'yes'):
